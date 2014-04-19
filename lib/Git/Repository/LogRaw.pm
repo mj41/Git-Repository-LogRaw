@@ -314,7 +314,8 @@ sub get_log {
 
             my ( $items_info, $items_stat ) = $self->parse_items_log_line( $items_part );
             if ( ref $items_info ne 'ARRAY' ) {
-                $err_msg = "Item line error. $items_info.";
+                # ToDo - add commit hash to other error messages.
+                $err_msg = "Item line error (commit $commit->{commit}). $items_info.\n";
                 last PARSE_LOG;
             }
             $commit->{items} = $items_info;
