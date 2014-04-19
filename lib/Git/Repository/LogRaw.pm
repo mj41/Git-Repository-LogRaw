@@ -84,10 +84,12 @@ sub parse_one_item_begin {
     return "Empty char before status (change char) not found" unless $line =~ m/\G \s /gcx;
     foreach my $pnum (0..$last_pnum) {
         # ToDo - Use one_item_parser_err more.
+        # Added (A), Copied (C), Deleted (D), Modified (M), Renamed (R),
+        # have their type (i.e. regular file, symlink, submodule, …) changed (T).
         return $self->one_item_parser_err(
             "Status (file change char) parent number ".($pnum+1)." not found",
             $line
-        ) unless $line =~ m/\G ([MAD]) /gcx;
+        ) unless $line =~ m/\G ([ACDMRT]) /gcx;
         $item_info->{parents}[ $pnum ]{status} = $1;
     }
 
