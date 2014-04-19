@@ -358,6 +358,7 @@ sub get_log {
 
     if ( $err_msg ) {
         print "Parsing error on line $line_num: $err_msg\n";
+        return undef;
     }
 
     my $err = $cmd->stderr();
@@ -443,15 +444,16 @@ sub get_refs {
     }
 
     if ( $err_msg ) {
-        print "Parsing error on line $line_num: $err_msg\n";
+        $err_msg = "Parsing error on line $line_num: $err_msg\n";
     }
 
     my $err = $cmd->stderr();
     my $err_out = do { local $/; <$err> };
+    $cmd->close;
+
     if ( $err_out ) {
-        $self->{err_msg} = "Error:\n  $err_out\n" . $err_msg;
-        print $self->{err_msg} if $self->{ver} >= 1;
-        return undef;
+        $err_msg = '' unless $err_msg;
+        $err_msg = "Command error:\n  $err_out\n" . $err_msg;
     }
     if ( $err_msg ) {
         $self->{err_msg} = $err_msg;
@@ -459,7 +461,6 @@ sub get_refs {
         return undef;
     }
 
-    $cmd->close;
     return $refs;
 }
 
