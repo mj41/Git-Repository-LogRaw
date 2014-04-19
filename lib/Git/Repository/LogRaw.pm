@@ -264,10 +264,10 @@ sub get_log {
                 $err_msg = "Committer line error. $name.";
                 last PARSE_LOG;
             }
-            $commit->{author}->{name} = $name;
-            $commit->{author}->{email} = $email;
-            $commit->{author}->{timezone} = $timezone;
-            $commit->{author}->{gmtime} = $gmtime;
+            $commit->{author}{name} = $name;
+            $commit->{author}{email} = $email;
+            $commit->{author}{timezone} = $timezone;
+            $commit->{author}{gmtime} = $gmtime;
             $ac_state = 'author';
             next;
         }
@@ -283,10 +283,10 @@ sub get_log {
                 $err_msg = "Committer line error. $name.";
                 last PARSE_LOG;
             }
-            $commit->{committer}->{name} = $name;
-            $commit->{committer}->{email} = $email;
-            $commit->{committer}->{timezone} = $timezone;
-            $commit->{committer}->{gmtime} = $gmtime;
+            $commit->{committer}{name} = $name;
+            $commit->{committer}{email} = $email;
+            $commit->{committer}{timezone} = $timezone;
+            $commit->{committer}{gmtime} = $gmtime;
             $ac_state = 'committer';
             next;
         }
