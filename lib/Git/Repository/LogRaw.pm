@@ -22,6 +22,21 @@ sub new {
     return $self;
 }
 
+sub short_str {
+    my ( $self, $str, $max_len ) = @_;
+    $max_len ||= 250;
+
+    return $str if length($str) <= $max_len;
+    return substr( $str, 0, $max_len-3 ) . "...";
+}
+
+sub one_item_parser_err {
+    my ( $self, $err_msg, $line ) = @_;
+
+    $line =~ m/\G (.*) /gcx;
+    my $line_end = $self->short_str( $1 );
+    return $err_msg . " - not parsed part '" . $line_end . "'";
+}
 
 sub parse_one_item_begin {
     my ( $self, $line, $item_num ) = @_;
@@ -68,12 +83,17 @@ sub parse_one_item_begin {
     # status
     return "Empty char before status (change char) not found" unless $line =~ m/\G \s /gcx;
     foreach my $pnum (0..$last_pnum) {
-        return "Status (change char) parent number ".($pnum+1)." not found" unless $line =~ m/\G ([MAD]) /gcx;
+        # ToDo - Use one_item_parser_err more.
+        return $self->one_item_parser_err(
+            "Status (file change char) parent number ".($pnum+1)." not found",
+            $line
+        ) unless $line =~ m/\G ([MAD]) /gcx;
         $item_info->{parents}[ $pnum ]{status} = $1;
     }
 
     # name
-    return "Name not found" unless $line =~ m/\G \0 ([^\0]+) \0? (.*?) $/gcx;
+    return $self->one_item_parser_err("Name not found",$line)
+        unless $line =~ m/\G \0 ([^\0]+) \0? (.*?) $/gcx;
     $item_info->{name} = $1;
     my $next_item_str = $2;
 
