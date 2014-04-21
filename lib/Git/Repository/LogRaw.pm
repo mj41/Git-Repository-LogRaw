@@ -238,7 +238,7 @@ sub get_log {
                 items => [],
             };
             $ac_state = 'commit';
-            next;
+            next PARSE_LOG;
         }
 
         # tree 1x
@@ -249,7 +249,7 @@ sub get_log {
             }
             $commit->{tree} = $tree;
             $ac_state = 'tree';
-            next;
+            next PARSE_LOG;
         }
 
         # parent 0+x
@@ -260,7 +260,7 @@ sub get_log {
             }
             push @{$commit->{parents}}, $parent;
             $ac_state = 'parent';
-            next;
+            next PARSE_LOG;
         }
 
         # author 1x
@@ -279,7 +279,7 @@ sub get_log {
             $commit->{author}{timezone} = $timezone;
             $commit->{author}{gmtime} = $gmtime;
             $ac_state = 'author';
-            next;
+            next PARSE_LOG;
         }
 
         # committer 1x
@@ -298,7 +298,7 @@ sub get_log {
             $commit->{committer}{timezone} = $timezone;
             $commit->{committer}{gmtime} = $gmtime;
             $ac_state = 'committer';
-            next;
+            next PARSE_LOG;
         }
 
         # empty lines - 1x each type
@@ -306,17 +306,17 @@ sub get_log {
             # empty_cb
             if ( $ac_state eq 'committer' ) {
                 $ac_state = 'empty_cb';
-                next;
+                next PARSE_LOG;
             }
             # empty_ca
             if ( $ac_state eq 'msg' ) {
                 $ac_state = 'empty_ca';
-                next;
+                next PARSE_LOG;
             }
             # empty_af
             if ( $ac_state eq 'item' || $ac_state eq 'empty_ca' ) {
                 $ac_state = 'empty_af';
-                next;
+                next PARSE_LOG;
             }
             $err_msg = "Found empty line after '$ac_state'";
             last PARSE_LOG;
@@ -331,7 +331,7 @@ sub get_log {
             $commit->{msg} .= "\n" if $commit->{msg};
             $commit->{msg} .= $msg_line;
             $ac_state = 'msg';
-            next;
+            next PARSE_LOG;
         }
 
         # empty_ca 1x - code is above
