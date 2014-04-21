@@ -359,6 +359,13 @@ sub get_log {
             goto PARSE_COMMIT_LINE;
         }
 
+        # no any items
+        if ( $line eq "\0" && $ac_state eq 'msg' ) {
+            $commit->{items} = undef;
+            $commit->{stat} = undef;
+            next PARSE_LOG;
+        }
+
         # empty_af 1x - code is above
 
         # error
