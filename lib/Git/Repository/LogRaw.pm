@@ -170,16 +170,22 @@ sub parse_person_log_line_part {
 sub get_log {
     my ( $self, $ssh_skip_list, %args ) = @_;
 
-    my $debug_sha = $args{debug_sha};
-
     my @cmd_args = ( 'log', '--numstat', '--pretty=raw', '--raw', '-c', '-t', '--root', '--abbrev=40', '-z' );
-    if ( $debug_sha ) {
-        push( @cmd_args,  '-n', 3, $debug_sha ) if $debug_sha;
+    if ( exists $args{debug_sha} ) {
+        push( @cmd_args,  '-n', 1, $args{debug_sha} );
     } else {
         push @cmd_args,  '--date-order', '--reverse', '--all';
     }
+
+    if ( exists $args{number_limit} ) {
+        push( @cmd_args,  '-n', $args{number_limit} );
+	}
+    if ( exists $args{fpath} ) {
+        push( @cmd_args,  '--', $args{fpath} );
+	}
+
     my $cmd = $self->{repo}->command( @cmd_args );
-    print "LogRaw cmdline: '" . join(' ', $cmd->cmdline() ) . "'\n" if $self->{ver} >= 4;
+    print "LogRaw cmdline: '" . join(' ', $cmd->cmdline() ) . "'\n" if $self->{ver} >= 5;
 
 
     my $line_num = 0;
