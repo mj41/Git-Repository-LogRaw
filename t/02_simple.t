@@ -12,15 +12,24 @@ use FindBin ();
 use Git::ClonesManager;
 use Git::Repository::LogRaw;
 
-my $tmp_base_dir = File::Spec->catdir( $FindBin::RealBin, '..', 'temp' );
-mkdir($tmp_base_dir) unless -d $tmp_base_dir;
 
-my $tmp_dir = File::Spec->catdir( $tmp_base_dir, 't-repos-gcm' );
-mkdir($tmp_dir) unless -d $tmp_dir;
+sub get_clonesmanager_obj {
+	my ( $project_alias ) = @_;
 
-my $cm_obj = Git::ClonesManager->new( data_path => $tmp_dir, vl => 1 );
+	my $repos_clones_base_dir = File::Spec->catdir( $FindBin::RealBin, '..', 'temp' );
+	mkdir($repos_clones_base_dir) unless -d $repos_clones_base_dir;
+
+	my $repos_clones_dir = File::Spec->catdir( $repos_clones_base_dir, 't-repos-gcm' );
+	mkdir($repos_clones_dir) unless -d $repos_clones_dir;
+
+	my $cm_obj = Git::ClonesManager->new( data_path => $repos_clones_dir, vl => 1 );
+	return $cm_obj;
+}
+
+my $project_alias = 'tt-tr1';
+my $cm_obj = get_clonesmanager_obj($project_alias);
 my $base_repo_obj = $cm_obj->get_repo_obj(
-	'tt-tr1',
+	$project_alias,
 	repo_url => 'git@github.com:mj41/tt-tr1.git',
 	skip_fetch => 1,
 );
