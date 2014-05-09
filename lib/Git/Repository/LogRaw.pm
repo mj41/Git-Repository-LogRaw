@@ -170,16 +170,21 @@ sub parse_person_log_line_part {
 sub get_log {
     my ( $self, $ssh_skip_list, %args ) = @_;
 
-    my @cmd_args = ( 'log', '--numstat', '--pretty=raw', '--raw', '-c', '-t', '--root', '--abbrev=40', '-z' );
-    if ( exists $args{debug_sha} ) {
-        push( @cmd_args,  '-n', 1, $args{debug_sha} );
-    } else {
-        push @cmd_args,  '--date-order', '--reverse', '--all';
-    }
+    my @cmd_args = (
+		'log', '--numstat', '--pretty=raw', '--raw', '-c', '-t', '--root',
+		'--abbrev=40', '-z', '--date-order', '--reverse'
+	);
 
     if ( exists $args{number_limit} ) {
         push( @cmd_args,  '-n', $args{number_limit} );
 	}
+
+    if ( exists $args{rev_range} ) {
+        push( @cmd_args, $args{rev_range} );
+    } else {
+        push @cmd_args,  '--all';
+    }
+
     if ( exists $args{fpath} ) {
         push( @cmd_args,  '--', $args{fpath} );
 	}

@@ -119,8 +119,10 @@ sub commit2_struct {
 }
 
 
+my $verbose_level = $ARGV[0] // 1;
+
 describe "git log structure of" => sub {
-	my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, 1 );
+	my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
 	my $log = $git_lograw_obj->get_log( {} );
 
 	it "commit 1" => sub {
@@ -128,6 +130,22 @@ describe "git log structure of" => sub {
 	};
 	it "commit 2" => sub {
 		is_deeply( $log->[1], commit2_struct() );
+	};
+};
+
+describe "option" => sub {
+	it "number_limit" => sub {
+		my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
+		my $log = $git_lograw_obj->get_log( {}, number_limit => 1 );
+		# todo - "-n 1" of "git log" is applied before "--reverse --date-order ..."
+		#is_deeply( $log, [ commit1_struct() ] );
+		is( scalar @$log, 1 );
+	};
+
+	it "rev_range" => sub {
+		my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
+		my $log = $git_lograw_obj->get_log( {}, rev_range => '37305807edcc52f0b83b1eb0264def1da46f49aa' );
+		is_deeply( $log, [ commit2_struct() ] );
 	};
 };
 
