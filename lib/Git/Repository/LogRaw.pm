@@ -76,7 +76,7 @@ sub parse_one_item_begin {
         return "Hash for parent number ".($pnum+1)." not found" unless $line =~ m/\G \s ([0-9a-f]{40}) /gcx;
         $item_info->{parents}[ $pnum ]{hash} = $1;
     }
-    return "Hash for new item not found" unless $line =~ m/(\G \s ([0-9a-f]{40}) )/gcx;
+    return "Hash for new item not found" unless $line =~ m/\G \s ([0-9a-f]{40}) /gcx;
     $item_info->{hash} = $1;
 
 
