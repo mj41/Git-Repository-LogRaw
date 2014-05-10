@@ -231,7 +231,12 @@ sub get_log {
 			} elsif ( $ac_state eq 'msg' && ($nulls eq "\0" || $nulls eq "\0\0") ) {
 				# todo - one or two nulls on merge commits are ok?
 
-			} elsif ( $ac_state ne 'begin' && $ac_state ne 'empty_ca' && $ac_state ne 'empty_af' ) {
+			} elsif (
+				   $ac_state ne 'begin'
+				&& $ac_state ne 'empty_ca'
+				&& $ac_state ne 'empty_af'
+				&& $ac_state ne 'committer' # empty commit message, and empty commit
+			) {
 				$err_msg = "Found 'commit' type line after '$ac_state'.";
 				last PARSE_LOG;
 			}
