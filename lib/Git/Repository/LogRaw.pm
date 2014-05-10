@@ -9,15 +9,8 @@ sub new {
 
 	my $self = {};
 	$self->{repo} = $repo;
-	$self->{ver} = 2;
-	$self->{ver} = $verbose_level if defined $verbose_level;
+	$self->{vl} = $verbose_level // 3;
 	$self->{err_msg} = undef;
-
-	if ( $self->{ver} >= 4 ) {
-		# todo
-		#require 'Data::Dumper';
-	}
-
 	bless $self, $class;
 	return $self;
 }
@@ -41,7 +34,12 @@ sub one_item_parser_err {
 sub parse_one_item_begin {
 	my ( $self, $line, $item_num ) = @_;
 
-	print "parsing item num $item_num: '$line'\n" if $self->{ver} >= 6;
+	if ( $self->{vl} >= 9 ) {
+		print "parsing item num $item_num: '$line'\n";
+	} elsif ( $self->{vl} >= 7 ) {
+		print "parsing item num $item_num: '". $self->short_str($line) . "'\n";
+	}
+
 	return "Colons not found on begin of item $item_num" unless $line =~ m/^(\:+)/gcx;
 	my $colons = $1;
 	my $last_pnum = length( $colons ) - 1;
@@ -107,7 +105,11 @@ sub parse_one_item_begin {
 sub parse_one_item_stat_begin {
 	my ( $self, $line, $stat_num ) = @_;
 
-	print "parsing stat num $stat_num: '$line'\n" if $self->{ver} >= 6;
+	if ( $self->{vl} >= 9 ) {
+		print "parsing stat num $stat_num: '$line'\n";
+	} elsif ( $self->{vl} >= 7 ) {
+		print "parsing stat num $stat_num: '" . $self->short_str($line) . "'\n";
+	}
 
 	my $stat = {};
 	return "Added and removed lines numbers not found of stat item $stat_num" unless $line =~ m/\G (\d+|\-) \t (\d+|\-) \t /gcx;
@@ -190,7 +192,7 @@ sub get_log {
 	}
 
 	my $cmd = $self->{repo}->command( @cmd_args );
-	print "LogRaw cmdline: '" . join(' ', $cmd->cmdline() ) . "'\n" if $self->{ver} >= 5;
+	print "LogRaw cmdline: '" . join(' ', $cmd->cmdline() ) . "'\n" if $self->{vl} >= 5;
 
 
 	my $line_num = 0;
@@ -203,14 +205,18 @@ sub get_log {
 	PARSE_LOG: while ( my $line = <$out_fh> ) {
 		$line_num++;
 		chomp $line;
-		printf( "%3d (prev %10s): '%s'\n", $line_num, $ac_state, $line ) if $self->{ver} >= 7;
+		printf( "%3d (prev %10s): '%s'\n", $line_num, $ac_state, $line ) if $self->{vl} >= 9;
 
 		# commit 1x
 		PARSE_COMMIT_LINE:
-		print "on commit: $line\n" if $self->{ver} >= 6;
+		if ( $self->{vl} >= 9 ) {
+			print "on commit: $line\n" ;
+		} elsif ( $self->{vl} >= 6 ) {
+			print "on commit: '". $self->short_str($line) . "'\n";
+		}
 		if ( my ( $nulls, $commit_hash ) = $line =~ /^(\0{0,2})commit ([0-9a-f]{40})$/ ) {
 			if ( defined $commit ) {
-				print Dumper( $commit ) if $self->{ver} >= 8;
+				print Dumper( $commit ) if $self->{vl} >= 8;
 				if ( (not defined $ssh_skip_list) || (not exists $ssh_skip_list->{$commit->{commit}}) ) {
 					push @$log, $commit;
 				}
@@ -393,16 +399,16 @@ sub get_log {
 	my $err_out = do { local $/; <$err> };
 	if ( $err_out ) {
 		$self->{err_msg} = "Error:\n  $err_out\n" . $err_msg;
-		print $self->{err_msg} if $self->{ver} >= 1;
+		print $self->{err_msg} if $self->{vl} >= 1;
 		return undef;
 	}
 	if ( $err_msg ) {
 		$self->{err_msg} = $err_msg;
-		print $self->{err_msg} if $self->{ver} >= 1;
+		print $self->{err_msg} if $self->{vl} >= 1;
 		return undef;
 	}
 
-	print Dumper( $commit ) if $self->{ver} >= 6;
+	print Dumper( $commit ) if $self->{vl} >= 7;
 	if ( (not defined $ssh_skip_list) || (not exists $ssh_skip_list->{$commit->{commit}}) ) {
 		push @$log, $commit;
 	}
@@ -423,7 +429,7 @@ sub get_refs {
 	my ( $self, $filter_type ) = @_;
 
 	my $cmd = $self->{repo}->command( 'for-each-ref' );
-	print "LogRaw cmdline: '" . join(' ', $cmd->cmdline() ) . "'\n" if $self->{ver} >= 4;
+	print "LogRaw cmdline: '" . join(' ', $cmd->cmdline() ) . "'\n" if $self->{vl} >= 5;
 
 	my $line_num = 0;
 	my $refs = {};
@@ -433,7 +439,7 @@ sub get_refs {
 	PARSE_REF: while ( my $line = <$out_fh> ) {
 		$line_num++;
 		chomp $line;
-		printf( "%3d: '%s'\n", $line_num, $line ) if $self->{ver} >= 4;
+		printf( "%3d: '%s'\n", $line_num, $line ) if $self->{vl} >= 7;
 
 		if ( my ( $sha, $sha_type, $tag_name ) = $line =~ /^([0-9a-f]{40})\ (commit|tag)\t(.*)$/ ) {
 			if ( my ( $name_prefix, $name_base ) = $tag_name =~ /^([^\/]+\/[^\/]+)\/(.*)$/ ) {
@@ -485,7 +491,7 @@ sub get_refs {
 	}
 	if ( $err_msg ) {
 		$self->{err_msg} = $err_msg;
-		print $self->{err_msg} if $self->{ver} >= 1;
+		print $self->{err_msg} if $self->{vl} >= 1;
 		return undef;
 	}
 
