@@ -202,8 +202,12 @@ sub get_log {
 	my $err_msg = undef;
 
 	my $out_fh = $cmd->stdout;
+	print "Parsing 'git log ...' output.\n" if $self->{vl} >= 4;
 	PARSE_LOG: while ( my $line = <$out_fh> ) {
 		$line_num++;
+		print "Parsing 'git log ...' output - line $line_num.\n"
+			if $self->{vl} >= 4 && $line_num % 100000 == 0;
+
 		chomp $line;
 		printf( "%3d (prev %10s): '%s'\n", $line_num, $ac_state, $line ) if $self->{vl} >= 9;
 
