@@ -26,34 +26,34 @@ sub get_clonesmanager_obj {
 	return $cm_obj;
 }
 
-my $project_alias = 'tt-tr1';
+my $project_alias = 'git-trepo';
 my $cm_obj = get_clonesmanager_obj($project_alias);
 my $base_repo_obj = $cm_obj->get_repo_obj(
 	$project_alias,
-	repo_url => 'git@github.com:mj41/tt-tr1.git',
+	repo_url => 'git@github.com:mj41/git-trepo.git',
 	skip_fetch => 1,
 );
 
 sub commit1_struct {
 	return {
 		author => {
-			email => 'mj@mj41.cz',
-			gmtime => '1286564447',
-			name => 'Michal Jurosz',
-			timezone => '+0200'
+			email => 'kal@houby.eu',
+			gmtime => '1153520604',
+			name => 'Karel Lysohlavka',
+			timezone => '+0000'
 		},
-		commit => '1c283d987b375d901620e8215b0e56e05cddb0c4',
+		commit => 'c1845d7580a091c1718e083cc5e90751cf3853f3',
 		committer => {
-			email => 'mj@mj41.cz',
-			gmtime => '1286564447',
-			name => 'Michal Jurosz',
-			timezone => '+0200'
+			email => 'kal@houby.eu',
+			gmtime => '1153520726',
+			name => 'Karel Lysohlavka',
+			timezone => '+0000'
 		},
 		items => [
 			{
-				hash => '9daeafb9864cf43055ae93beb0afd6c7d144bfa4',
+				hash => '0066197c4d0a2bc0bad6418c0341455b6789fd14',
 				mode => 100644,
-				name => 'README',
+				name => 'fileR1.txt',
 				parents => [
 					{
 						hash => '0000000000000000000000000000000000000000',
@@ -63,58 +63,65 @@ sub commit1_struct {
 				]
 			}
 		],
-		msg => 'c1',
+		msg => 'commit_master_001',
 		parents => [],
 		stat => {
-			README => {
-				lines_added => 1,
+			'fileR1.txt' => {
+				lines_added => 2,
 				lines_removed => 0
 			}
 		},
-		tree => '26d219526a6a64efcd2bf566f04735f798a50084'
+		tree => 'd9348511742d60519a93e8eb3c15611baa9d1570'
 	};
 }
 
 sub commit2_struct {
 	return {
 		author => {
-			email => 'mj@mj41.cz',
-			gmtime => '1286564504',
-			name => 'Michal Jurosz',
+			email => 'kal@houby.eu',
+			gmtime => '1153528404',
+			name => 'Karel Lysohlavka',
 			timezone => '+0200'
 		},
-		commit => '37305807edcc52f0b83b1eb0264def1da46f49aa',
+		commit => 'ac03197f450c74342f76f6eab41569a26fa3baaa',
 		committer => {
-			email => 'mj@mj41.cz',
-			gmtime => '1286564504',
-			name => 'Michal Jurosz',
-			timezone => '+0200'
+			email => 'josef.p.muchomurka@mushrooms.com',
+			gmtime => '1153562645',
+			name => 'Josef Pepa Muchomurka',
+			timezone => '+0300'
 		},
 		items => [
 			{
-				hash => '253ebd5273da6863b84103742c14d0ef631029b1',
+				hash => '18b1d61b237084da18859e2029ad88c9cd3c50c0',
 				mode => 100644,
-				name => 'README',
+				name => 'fileR1.txt',
 				parents => [
 					{
-						hash => '9daeafb9864cf43055ae93beb0afd6c7d144bfa4',
+						hash => '0066197c4d0a2bc0bad6418c0341455b6789fd14',
 						mode => 100644,
 						status => 'M'
 					}
 				]
 			}
 		],
-		msg => 'c2',
+		msg => 'Commit master 002
+
+Commit description line 1
+Commit description line 2
+Commit description line 3
+
+Commit description line 5',
+
 		parents => [
-			'1c283d987b375d901620e8215b0e56e05cddb0c4'
+			'c1845d7580a091c1718e083cc5e90751cf3853f3'
 		],
 		stat => {
-			README => {
-				lines_added => 1,
-				lines_removed => 1
+			'fileR1.txt' => {
+				lines_added => 3,
+				lines_removed => 0
 			}
 		},
-		tree => '2d4187ac4f33aa739b7bffac2ef186eec53f2d8e'
+		tree => 'e59a25ae12f625398e5e4cb536b7cffea8319f97'
 	};
 }
 
@@ -124,7 +131,6 @@ my $verbose_level = $ARGV[0] // 1;
 describe "git log structure of" => sub {
 	my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
 	my $log = $git_lograw_obj->get_log( {} );
-
 	it "commit 1" => sub {
 		is_deeply( $log->[0], commit1_struct() );
 	};
@@ -144,13 +150,13 @@ describe "option" => sub {
 
 	it "rev_range" => sub {
 		my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
-		my $log = $git_lograw_obj->get_log( {}, rev_range => '37305807edcc52f0b83b1eb0264def1da46f49aa' );
+		my $log = $git_lograw_obj->get_log( {}, rev_range => commit2_struct()->{commit} );
 		is_deeply( $log, [ commit1_struct(), commit2_struct() ] );
 	};
 
 	it "only_rev" => sub {
 		my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
-		my $log = $git_lograw_obj->get_log( {}, only_rev => '37305807edcc52f0b83b1eb0264def1da46f49aa' );
+		my $log = $git_lograw_obj->get_log( {}, only_rev => commit2_struct()->{commit} );
 		is_deeply( $log, [ commit2_struct() ] );
 	};
 };
