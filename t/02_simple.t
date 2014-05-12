@@ -145,8 +145,9 @@ describe "option" => sub {
 	it "rev_range" => sub {
 		my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
 		my $log = $git_lograw_obj->get_log( {}, rev_range => '37305807edcc52f0b83b1eb0264def1da46f49aa' );
-		is_deeply( $log, [ commit2_struct() ] );
+		is_deeply( $log, [ commit1_struct(), commit2_struct() ] );
 	};
+
 };
 
 runtests unless caller;
