@@ -183,6 +183,11 @@ sub get_log {
 
 	if ( exists $args{rev_range} ) {
 		push( @cmd_args, $args{rev_range} );
+	} elsif ( exists $args{only_rev} ) {
+		push(
+			@cmd_args,
+			sprintf( "%s^..%s", $args{only_rev}, $args{only_rev} )
+		);
 	} else {
 		push @cmd_args,  '--all';
 	}
