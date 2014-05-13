@@ -188,7 +188,7 @@ sub get_log {
 			@cmd_args,
 			sprintf( "%s^..%s", $args{only_rev}, $args{only_rev} )
 		);
-	} else {
+	} elsif ( $args{all} ) {
 		push @cmd_args,  '--all';
 	}
 
