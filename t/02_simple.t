@@ -26,14 +26,6 @@ sub get_clonesmanager_obj {
 	return $cm_obj;
 }
 
-my $project_alias = 'git-trepo';
-my $cm_obj = get_clonesmanager_obj($project_alias);
-my $base_repo_obj = $cm_obj->get_repo_obj(
-	$project_alias,
-	repo_url => 'git@github.com:mj41/git-trepo.git',
-	skip_fetch => 1,
-);
-
 sub commit1_struct {
 	return {
 		author => {
@@ -127,6 +119,15 @@ Commit description line 5',
 
 
 my $verbose_level = $ARGV[0] // 1;
+my $skip_fetch = $ARGV[1] // 1;
+
+my $project_alias = 'git-trepo';
+my $cm_obj = get_clonesmanager_obj($project_alias);
+my $base_repo_obj = $cm_obj->get_repo_obj(
+	$project_alias,
+	repo_url => 'git@github.com:mj41/git-trepo.git',
+	skip_fetch => $skip_fetch,
+);
 
 describe "git log structure of" => sub {
 	my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
@@ -158,6 +159,12 @@ describe "option" => sub {
 		my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
 		my $log = $git_lograw_obj->get_log( {}, only_rev => commit2_struct()->{commit} );
 		is_deeply( $log, [ commit2_struct() ] );
+	};
+
+	it "branch, rev_range" => sub {
+		my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
+		my $log = $git_lograw_obj->get_log( {}, branch => 'br1', rev_range => 'HEAD~1..HEAD' );
+		is( $log->[0]{commit}, '940397865d3b109ce7933d188bd37240897545bf' );
 	};
 };
 

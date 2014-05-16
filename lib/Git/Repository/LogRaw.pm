@@ -192,6 +192,10 @@ sub get_log {
 		push @cmd_args,  '--all';
 	}
 
+	if ( exists $args{branch} ) {
+		push( @cmd_args, '--branches', $args{branch} );
+	}
+
 	if ( exists $args{fpath} ) {
 		push( @cmd_args,  '--', $args{fpath} );
 	}
