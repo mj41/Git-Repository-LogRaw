@@ -336,6 +336,25 @@ sub get_log {
 			next PARSE_LOG;
 		}
 
+		# gpgsig 1x
+		if ( my ( $gpgsig_begin ) = $line =~ /^gpgsig (.*)$/ ) {
+			if ( $ac_state ne 'committer' ) {
+				$err_msg = "Found 'gpgsig' type line after '$ac_state'.";
+				last PARSE_LOG;
+			}
+			$commit->{committer}{gpgsig} = $gpgsig_begin."\n";
+			$ac_state = 'gpgsig';
+			next PARSE_LOG;
+		}
+		# gpgsig pgp signature
+		if ( $ac_state eq 'gpgsig' ) {
+			if ( $line =~ /-----END PGP SIGNATURE-----/ ) {
+				$ac_state = 'committer';
+			}
+			$commit->{committer}{gpgsig} .= $line."\n";
+			next PARSE_LOG;
+		}
+
 		# empty lines - 1x each type
 		if ( $line eq '' ) {
 			# empty_cb
