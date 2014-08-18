@@ -163,8 +163,8 @@ describe "option" => sub {
 
 	it "branch, rev_range" => sub {
 		my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
-		my $log = $git_lograw_obj->get_log( {}, branch => 'br1', rev_range => 'HEAD~1..HEAD' );
-		is( $log->[0]{commit}, '940397865d3b109ce7933d188bd37240897545bf' );
+		my $log = $git_lograw_obj->get_log( {}, branch => 'br1', rev_range => 'HEAD..HEAD~1' );
+		is( $log->[0]{commit}, '5035bb5592d18809b9c3ef2ba352d080697d2b40' );
 	};
 };
 
