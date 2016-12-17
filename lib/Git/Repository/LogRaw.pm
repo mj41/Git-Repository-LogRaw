@@ -96,14 +96,20 @@ sub parse_one_item_begin {
 		return $self->one_item_parser_err(
 			"Status (file change char) parent number ".($pnum+1)." not found",
 			$line
-		) unless $line =~ m/\G ([ACDMRT]\d*) /gcx;
-		$item_info->{parents}[ $pnum ]{status} = $1;
+		) unless $line =~ m/\G (R\d{3}|[ACDMRT]) /gcx;
+		my $action = $1;
+		if ( my ($r_ratio) = $action =~ m/^(R)(\d{3})$/ ) {
+			$item_info->{parents}[ $pnum ]{status} = $1;
+			$item_info->{parents}[ $pnum ]{ratio} = $2;
+		} else {
+			$item_info->{parents}[ $pnum ]{status} = $action;
+		}
 	}
 
 	# name
 	my $next_item_str;
 
-	if ( $item_info->{parents}[0]{status} eq 'R100' ) {
+	if ( exists $item_info->{parents}[0]{ratio} ) {
 		return $self->one_item_parser_err("Old and new name after rename not found",$line,$item_info)
 			unless $line =~ m/\G \0 ([^\0]+) \0 ([^\0]+) \0? (.*?) $/gcx;
 		$item_info->{prev_name} = $1;
