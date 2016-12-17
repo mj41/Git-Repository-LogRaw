@@ -129,9 +129,9 @@ my $base_repo_obj = $cm_obj->get_repo_obj(
 	skip_fetch => $skip_fetch,
 );
 
-describe "git log structure of" => sub {
+describe "git log --reverse structure of" => sub {
 	my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
-	my $log = $git_lograw_obj->get_log( {} );
+	my $log = $git_lograw_obj->get_log( {}, reverse => 1 );
 	it "commit 1" => sub {
 		is_deeply( $log->[0], commit1_struct() );
 	};
@@ -151,7 +151,7 @@ describe "option" => sub {
 
 	it "rev_range" => sub {
 		my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
-		my $log = $git_lograw_obj->get_log( {}, rev_range => commit2_struct()->{commit} );
+		my $log = $git_lograw_obj->get_log( {}, reverse => 1, rev_range => commit2_struct()->{commit} );
 		is_deeply( $log, [ commit1_struct(), commit2_struct() ] );
 	};
 
@@ -163,7 +163,7 @@ describe "option" => sub {
 
 	it "branch, rev_range" => sub {
 		my $git_lograw_obj = Git::Repository::LogRaw->new( $base_repo_obj, $verbose_level );
-		my $log = $git_lograw_obj->get_log( {}, branch => 'br1', rev_range => 'HEAD..HEAD~1' );
+		my $log = $git_lograw_obj->get_log( {}, branch => 'br1', reverse => 1, rev_range => 'HEAD..HEAD~1' );
 		is( $log->[0]{commit}, '5035bb5592d18809b9c3ef2ba352d080697d2b40' );
 	};
 };

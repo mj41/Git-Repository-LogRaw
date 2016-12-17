@@ -205,8 +205,12 @@ sub get_log {
 
 	my @cmd_args = (
 		'log', '--numstat', '--pretty=raw', '--raw', '-c', '-t', '--root',
-		'--abbrev=40', '-z', '--date-order', '--reverse'
+		'--abbrev=40', '-z', '--date-order'
 	);
+
+	if ( exists $args{reverse} ) {
+		push( @cmd_args, '--reverse' );
+	}
 
 	if ( exists $args{number_limit} ) {
 		push( @cmd_args,  '-n', $args{number_limit} );
@@ -232,7 +236,7 @@ sub get_log {
 	}
 
 	my $cmd = $self->{repo}->command( @cmd_args );
-	print "LogRaw cmdline: '" . join(' ', $cmd->cmdline() ) . "'\n" if $self->{vl} >= 5;
+	print "LogRaw cmdline: '" . join(' ', $cmd->cmdline() ) . "'\n" if $self->{vl} >= 8;
 
 
 	my $line_num = 0;
@@ -249,7 +253,7 @@ sub get_log {
 			if $self->{vl} >= 4 && $line_num % 100000 == 0;
 
 		chomp $line;
-		printf( "%3d (prev %10s): '%s'\n", $line_num, $ac_state, $line ) if $self->{vl} >= 9;
+		printf( "%3d (prev %10s): '%s'\n", $line_num, $ac_state, $self->dump_line($line) ) if $self->{vl} >= 9;
 
 		# commit 1x
 		PARSE_COMMIT_LINE:
