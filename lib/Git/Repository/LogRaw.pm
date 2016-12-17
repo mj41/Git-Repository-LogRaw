@@ -15,27 +15,36 @@ sub new {
 	return $self;
 }
 
+sub dump_line {
+	my ($self, $src_line, %arg) = @_;
+	my $line = $src_line;
+	$line =~ s{\0}{‖}g;
+	return $line;
+}
+
 sub short_str {
 	my ( $self, $str, $max_len ) = @_;
 	$max_len ||= 250;
 
-	return $str if length($str) <= $max_len;
-	return substr( $str, 0, $max_len-3 ) . "...";
+	return $self->dump_line($str) if length($str) <= $max_len;
+	return $self->dump_line(
+		substr( $str, 0, $max_len-3 ) . "..."
+	);
 }
 
 sub one_item_parser_err {
-	my ( $self, $err_msg, $line ) = @_;
+	my ( $self, $err_msg, $line, $item_info ) = @_;
 
 	$line =~ m/\G (.*) /gcx;
 	my $line_end = $self->short_str( $1 );
-	return $err_msg . " - not parsed part '" . $line_end . "'";
+	return $err_msg . " - not parsed part '" . $self->dump_line($line_end) . "'" . "\n".Dumper($item_info);
 }
 
 sub parse_one_item_begin {
 	my ( $self, $line, $item_num ) = @_;
 
 	if ( $self->{vl} >= 9 ) {
-		print "parsing item num $item_num: '$line'\n";
+		print "parsing item num $item_num: '".$self->dump_line($line)."'\n";
 	} elsif ( $self->{vl} >= 7 ) {
 		print "parsing item num $item_num: '". $self->short_str($line) . "'\n";
 	}
@@ -97,7 +106,7 @@ sub parse_one_item_begin {
 	$item_info->{name} = $1;
 	my $next_item_str = $2;
 
-	#print Dumper( $item_info );
+	print Dumper( $item_info ) if $self	->{vl} >= 9;
 	return $item_info, $next_item_str;
 }
 
@@ -106,7 +115,7 @@ sub parse_one_item_stat_begin {
 	my ( $self, $line, $stat_num ) = @_;
 
 	if ( $self->{vl} >= 9 ) {
-		print "parsing stat num $stat_num: '$line'\n";
+		print "parsing stat num $stat_num: '".$self->dump_line($line)."'\n";
 	} elsif ( $self->{vl} >= 7 ) {
 		print "parsing stat num $stat_num: '" . $self->short_str($line) . "'\n";
 	}
