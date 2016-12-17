@@ -96,15 +96,25 @@ sub parse_one_item_begin {
 		return $self->one_item_parser_err(
 			"Status (file change char) parent number ".($pnum+1)." not found",
 			$line
-		) unless $line =~ m/\G ([ACDMRT]) /gcx;
+		) unless $line =~ m/\G ([ACDMRT]\d*) /gcx;
 		$item_info->{parents}[ $pnum ]{status} = $1;
 	}
 
 	# name
-	return $self->one_item_parser_err("Name not found",$line)
-		unless $line =~ m/\G \0 ([^\0]+) \0? (.*?) $/gcx;
-	$item_info->{name} = $1;
-	my $next_item_str = $2;
+	my $next_item_str;
+
+	if ( $item_info->{parents}[0]{status} eq 'R100' ) {
+		return $self->one_item_parser_err("Old and new name after rename not found",$line,$item_info)
+			unless $line =~ m/\G \0 ([^\0]+) \0 ([^\0]+) \0? (.*?) $/gcx;
+		$item_info->{prev_name} = $1;
+		$item_info->{name} = $2;
+		$next_item_str = $3;
+	} else {
+		return $self->one_item_parser_err("Name not found",$line,$item_info)
+			unless $line =~ m/\G \0 ([^\0]+) \0? (.*?) $/gcx;
+		$item_info->{name} = $1;
+		$next_item_str = $2;
+	}
 
 	print Dumper( $item_info ) if $self	->{vl} >= 9;
 	return $item_info, $next_item_str;
@@ -121,15 +131,27 @@ sub parse_one_item_stat_begin {
 	}
 
 	my $stat = {};
-	return "Added and removed lines numbers not found of stat item $stat_num" unless $line =~ m/\G (\d+|\-) \t (\d+|\-) \t /gcx;
+	return "Added and removed lines numbers not found of stat item $stat_num"
+		unless $line =~ m/\G (\d+|\-) \t (\d+|\-) \t /gcx;
 	my ( $added, $removed ) = ( $1, $2 );
 	$stat->{lines_added} = $added eq '-' ? undef : $added;
 	$stat->{lines_removed} = $removed eq '-' ? undef : $removed;
 
-	return "File name not found of stat item $stat_num" unless $line =~ /\G ([^\0]+) (?:\0(.+))? $/gcx;
-	my $fname = $1;
-	return ( $fname, $stat, $2 ) if $2;
-	return ( $fname, $stat );
+	my $fname;
+	my $new_item_str;
+	if ( $line =~ /\G \0 /gcx ) {
+		return "Old and new file name not found of stat item $stat_num"
+			unless $line =~ /\G ([^\0]+) \0 ([^\0]+) (?:\0(.+))? $/gcx;
+		$stat->{prev_file} = $1;
+		$fname = $2;
+		$new_item_str = $3;
+	} else {
+		return "File name not found of stat item $stat_num"
+			unless $line =~ /\G ([^\0]+) (?:\0(.+))? $/gcx;
+		$fname = $1;
+		$new_item_str = $2;
+	}
+	return ( $fname, $stat, $new_item_str );
 }
 
 
