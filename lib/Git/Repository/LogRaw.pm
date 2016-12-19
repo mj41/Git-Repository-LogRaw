@@ -377,9 +377,10 @@ sub get_log {
 			next PARSE_LOG;
 		}
 
-		# ToDo before or after gpgsig? "HG:extra ", "HG:rename "
+		# ToDo before or after gpgsig?
+		# ToDo explicit list? "HG:extra ", "HG:rename ","HG:rename-source "
 		# HG: Xx
-		if ( $line =~ /^HG:(?:extra|rename) .+$/ ) {
+		if ( $line =~ /^HG:[a-z-]+ .+$/ ) {
 			if ( $ac_state ne 'committer' ) {
 				$err_msg = "Found 'HG:' line after '$ac_state'.";
 				last PARSE_LOG;
