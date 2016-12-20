@@ -92,15 +92,16 @@ sub parse_one_item_begin {
 	foreach my $pnum (0..$last_pnum) {
 		# ToDo - Use one_item_parser_err more.
 		# Added (A), Copied (C), Deleted (D), Modified (M), Renamed (R),
-		# have their type (i.e. regular file, symlink, submodule, …) changed (T).
+		# have their type (i.e. regular file, symlink, submodule, …) changed (T),
+		# are Unmerged (U), are Unknown (X), or have had their pairing Broken (B).
 		return $self->one_item_parser_err(
 			"Status (file change char) parent number ".($pnum+1)." not found",
 			$line
-		) unless $line =~ m/\G (R\d{3}|[ACDMRT]) /gcx;
+		) unless $line =~ m/\G ([CR]\d{3}|[ACDMRT]) /gcx;
 		my $action = $1;
-		if ( my ($r_ratio) = $action =~ m/^(R)(\d{3})$/ ) {
-			$item_info->{parents}[ $pnum ]{status} = $1;
-			$item_info->{parents}[ $pnum ]{ratio} = $2;
+		if ( my ($rc_status,$rc_ratio) = $action =~ m/^([CR])(\d{3})$/ ) {
+			$item_info->{parents}[ $pnum ]{status} = $rc_status;
+			$item_info->{parents}[ $pnum ]{ratio} = $rc_ratio;
 		} else {
 			$item_info->{parents}[ $pnum ]{status} = $action;
 		}
