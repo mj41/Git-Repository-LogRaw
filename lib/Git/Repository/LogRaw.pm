@@ -113,7 +113,7 @@ sub parse_one_item_begin {
 	if ( exists $item_info->{parents}[0]{ratio} ) {
 		return $self->one_item_parser_err("Old and new name after rename not found",$line,$item_info)
 			unless $line =~ m/\G \0 ([^\0]+) \0 ([^\0]+) \0? (.*?) $/gcx;
-		$item_info->{prev_name} = $1;
+		$item_info->{org_name} = $1;
 		$item_info->{name} = $2;
 		$next_item_str = $3;
 	} else {
